@@ -30,12 +30,14 @@ def main():
 	root = Tk()
 	root.protocol("WM_DELETE_WINDOW", lambda r = root: aboba(r))
 	root.geometry("600x400")
+	b_connect = Button(root, text='Подключение', command=connect_func)
+	b_connect.place(x=300, y=200)
 	root.mainloop()
 
 def screenshot_func():
-	i = 0
+	i = 1
 	while True:
-		pyautogui.screenshot('e:/projects/paps_kurs/' + str(i) + '.jpg')
+		pyautogui.screenshot('e:/projects/paps_kurs/screenshots' + str(i) + '.jpg')
 		time.sleep(5)
 		i+=1
 		if stop_thread is True:
