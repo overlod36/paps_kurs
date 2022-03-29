@@ -2,6 +2,7 @@ import os
 import socketserver
 import sqlite3
 
+
 class TCPHandler(socketserver.BaseRequestHandler):
 	def handle(self):
 		self.data = self.request.recv(1024).strip()
@@ -16,3 +17,6 @@ if __name__ == "__main__":
 	with socketserver.TCPServer((HOST, PORT), TCPHandler) as serv:
 		print("Сервер запущен! Порт - > ", PORT)
 		serv.serve_forever()
+
+
+

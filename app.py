@@ -6,19 +6,39 @@ import sys
 import time
 
 stop_thread = False
-def connect_func():
-	HOST, PORT = "localhost", 8080
-	data = " ".join(sys.argv[1:])
 
+
+class Client:
+	def __init__(self):
+		self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		self.connect()
+
+	def connect(self):
+		try:
+			self.client.connect(('localhost', 1234))
+		except:
+			print('Произошла ошибка...')
+
+	def send(self, data):
+		self.client.sendall(data)
+		return self.client.recv(1024)
+
+def connect_func(i_list):
+	HOST, PORT = "localhost", 8080
+	data = i_list[0].get()
+	print(i_list[0].get(), i_list[1].get())
 	try:
 		with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock: #SOCK_STREAM - TCP сокет
 			sock.connect((HOST, PORT))
 			sock.sendall(bytes(data + "\n", "utf-8"))
 			received = str(sock.recv(1024), "utf-8")
-			print("Отправленная информация -> ", data)
+			print("Отправленная информация -> ", str(data))
 		print("Полученная информация -> ", received)
 	except ConnectionRefusedError:
 		print("Соединение не было установлено!")
+	
+
+
 
 def aboba(root):
 	global stop_thread
@@ -37,7 +57,7 @@ def main():
 	login_label.place(x=190, y =114)
 	password_entry.place(x = 260, y = 174)
 	password_label.place(x = 190, y = 174)
-	b_connect = Button(root, text='Подключение', command=connect_func)
+	b_connect = Button(root, text='Подключение', command=lambda l = [login_entry, password_entry]: connect_func(l))
 	login_entry.place(x = 260, y = 115)
 	b_connect.place(x=243, y=265)
 	root.mainloop()
