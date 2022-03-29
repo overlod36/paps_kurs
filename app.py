@@ -30,14 +30,22 @@ def main():
 	root = Tk()
 	root.protocol("WM_DELETE_WINDOW", lambda r = root: aboba(r))
 	root.geometry("600x400")
+	login_entry = Entry(root, width=23)
+	login_label = Label(root, text="Логин")
+	password_entry = Entry(root, width=23, show="*")
+	password_label = Label(root, text="Пароль")
+	login_label.place(x=190, y =114)
+	password_entry.place(x = 260, y = 174)
+	password_label.place(x = 190, y = 174)
 	b_connect = Button(root, text='Подключение', command=connect_func)
-	b_connect.place(x=300, y=200)
+	login_entry.place(x = 260, y = 115)
+	b_connect.place(x=243, y=265)
 	root.mainloop()
 
 def screenshot_func():
 	i = 1
 	while True:
-		pyautogui.screenshot('e:/projects/paps_kurs/screenshots' + str(i) + '.jpg')
+		pyautogui.screenshot('e:/projects/paps_kurs/screenshots/' + str(i) + '.jpg')
 		time.sleep(5)
 		i+=1
 		if stop_thread is True:
