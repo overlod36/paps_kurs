@@ -4,6 +4,7 @@ from tkinter import *
 import socket
 import sys
 import time
+import json
 
 stop_thread = False
 
@@ -25,12 +26,11 @@ class Client:
 
 def connect_func(i_list):
 	HOST, PORT = "localhost", 8080
-	data = i_list[0].get()
-	print(i_list[0].get(), i_list[1].get())
+	data = i_list[0] + " " + i_list[1].get() + " " + i_list[2].get()
 	try:
 		with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock: #SOCK_STREAM - TCP сокет
 			sock.connect((HOST, PORT))
-			sock.sendall(bytes(data + "\n", "utf-8"))
+			sock.send(json.dumps(data).encode("utf-8"))
 			received = str(sock.recv(1024), "utf-8")
 			print("Отправленная информация -> ", str(data))
 		print("Полученная информация -> ", received)
@@ -57,7 +57,7 @@ def main():
 	login_label.place(x=190, y =114)
 	password_entry.place(x = 260, y = 174)
 	password_label.place(x = 190, y = 174)
-	b_connect = Button(root, text='Подключение', command=lambda l = [login_entry, password_entry]: connect_func(l))
+	b_connect = Button(root, text='Подключение', command=lambda l = ['1', login_entry, password_entry]: connect_func(l))
 	login_entry.place(x = 260, y = 115)
 	b_connect.place(x=243, y=265)
 	root.mainloop()
