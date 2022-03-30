@@ -5,7 +5,6 @@ import sqlite3
 class TCPHandler(socketserver.BaseRequestHandler):
 	def handle(self):
 		self.data = self.request.recv(1024).strip()
-		print(self.data)
 		print(self.client_address[0])
 		self.data_proc()
 		self.request.sendall(self.data)
@@ -13,14 +12,13 @@ class TCPHandler(socketserver.BaseRequestHandler):
 	def data_proc(self):
 		l_data = self.data.decode('utf-8').replace('"', '')
 		l_data = list(l_data.split(" "))
-		print(l_data)
-		l_res = sql_1.execute(f"SELECT * FROM users").fetchall()
-		print(l_res)
 		if l_data[0] == '1':
 			print('Происходит авторизация пользователя...')
-			l_res = sql_1.execute(f"SELECT * FROM users WHERE login == ?", (l_data[1],)).fetchall()
-			#l_res = list(sql.execute(f"SELECT * FROM users WHERE login == ?", (l_data[1],)))
-			print(l_res)
+			l_res = list(sql_1.execute(f"SELECT * FROM users WHERE login == ?", (l_data[1],)).fetchall())
+			if len(l_res) != 0:
+				if l_res[0][0] == l_data[1]:
+					if l_res[0][1] == l_data[2]:
+						print('Gotcha Gotcha Gotcha!!!')
 
 db = sqlite3.connect('tasks.db')
 sql_1 = db.cursor()
@@ -53,9 +51,9 @@ sql_1.execute("""CREATE TABLE IF NOT EXISTS users(
 	FOREIGN KEY (emp_id) REFERENCES employees(employee_id)
 	) 
 	""")
+
+db.execute(f"INSERT INTO employees VALUES(?, ?)", (1, 'Сотрудник'))
 db.execute(f"INSERT INTO users VALUES(?,?,?)", ("Dima", "1234", 1))
-l_res = db.execute(f"SELECT * FROM users").fetchall()
-print(l_res)
 with socketserver.TCPServer((HOST, PORT), TCPHandler) as serv:
 	print("Сервер запущен! Порт - > ", PORT)
 	serv.serve_forever()
