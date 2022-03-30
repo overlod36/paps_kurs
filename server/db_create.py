@@ -29,3 +29,7 @@ sql_1.execute("""CREATE TABLE IF NOT EXISTS users(
 	FOREIGN KEY (emp_id) REFERENCES employees(employee_id)
 	) 
 	""")
+sql_1.execute(f"INSERT INTO users VALUES(?,?,?)", ("Dima", "1234", 1))
+l = list(sql_1.execute(f"SELECT * FROM users"))
+print(l)
+
