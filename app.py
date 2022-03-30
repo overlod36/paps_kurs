@@ -1,6 +1,7 @@
 import pyautogui
 from threading import Thread
 from tkinter import *
+import tkinter.messagebox as mb
 import socket
 import sys
 import time
@@ -33,7 +34,12 @@ def connect_func(i_list):
 			sock.send(json.dumps(data).encode("utf-8"))
 			received = str(sock.recv(1024), "utf-8")
 			print("Отправленная информация -> ", str(data))
-		print("Полученная информация -> ", received)
+		if received == 'Authorized!':
+			mb.showinfo("Информация", 'Авторизация прошла успешно!')
+		elif received == 'Wrong password!':
+			mb.showinfo("Ошибка", "Неверно введен пароль!")
+		elif received == 'No such a user in a system!':
+			mb.showinfo('Ошибка', 'Такого пользователя нет в системе!')
 	except ConnectionRefusedError:
 		print("Соединение не было установлено!")
 	
