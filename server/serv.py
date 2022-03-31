@@ -16,12 +16,17 @@ class TCPHandler(socketserver.BaseRequestHandler):
 			l_res = list(sql_1.execute(f"SELECT * FROM users WHERE login == ?", (l_data[1],)).fetchall())
 			if len(l_res) != 0:
 				if l_res[0][0] == l_data[1]:
-					if l_res[0][1] == l_data[2]:
+					if l_res[0][1] == l_data[2] and l_res[0] not in users_connected:
 						self.request.sendall('Authorized!'.encode('utf-8'))
+						users_connected.append(l_res[0])
+					elif l_res[0] in users_connected:
+						self.request.sendall('There is already such a user!'.encode('utf-8'))
 					else:
 						self.request.sendall('Wrong password!'.encode('utf-8'))
 			else:
 				self.request.sendall('No such a user in a system!'.encode('utf-8'))
+
+users_connected = []
 
 db = sqlite3.connect('tasks.db')
 sql_1 = db.cursor()

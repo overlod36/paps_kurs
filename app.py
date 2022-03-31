@@ -81,10 +81,14 @@ def connect_func(i_list, wind, w_list):
 			mb.showinfo("Ошибка", "Неверно введен пароль!")
 		elif received == 'No such a user in a system!':
 			mb.showinfo('Ошибка', 'Такого пользователя нет в системе!')
+		elif received == 'There is already such a user!':
+			mb.showinfo('Ошибка', 'Данный пользователь уже авторизован в системе!')
 	except ConnectionRefusedError:
 		print("Соединение не было установлено!")
+		mb.showinfo('Ошибка', 'Не удалось совершить соединение с сервером!')
 	
-
+def push_time_to_server(obj):
+	pass
 
 
 def aboba(root):
@@ -102,9 +106,9 @@ def s_user_interface(wind, w_list):
 	b_start = Button(wind, text="Запуск/Пауза")
 	b_start.config(command=st1.start)
 	b_start.place(x=897, y = 93)
-
-
-
+	b_push = Button(wind, text="Отправка данных на сервер")
+	b_push.config(command=push_time_to_server)
+	b_push.place(x=795, y = 140)
 
 def main():
 	root = Tk()
