@@ -88,7 +88,22 @@ def connect_func(i_list, wind, w_list):
 		mb.showinfo('Ошибка', 'Не удалось совершить соединение с сервером!')
 	
 def push_time_to_server(obj):
-	pass
+	HOST, PORT = "localhost", 8080
+	st1, st2, st3 =  f'{obj.hours}' if obj.hours > 9 else f'0{obj.hours}', f'{obj.minutes}' if obj.minutes > 9 else f'0{obj.minutes}', f'{obj.seconds}' if obj.seconds > 9 else f'0{obj.seconds}'
+	res = st1 + ':' + st2 + ':' + st3
+	data = '2' + " " + res
+	try:
+		with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock: #SOCK_STREAM - TCP сокет
+			sock.connect((HOST, PORT))
+			sock.send(json.dumps(data).encode("utf-8"))
+			received = str(sock.recv(1024), "utf-8")
+			print("Отправленная информация -> ", str(data))
+			print("Полученная информация -> ", received)
+
+	except ConnectionRefusedError:
+		print("Соединение не было установлено!")
+		mb.showinfo('Ошибка', 'Не удалось совершить соединение с сервером!')
+		
 
 
 def aboba(root):
@@ -107,7 +122,7 @@ def s_user_interface(wind, w_list):
 	b_start.config(command=st1.start)
 	b_start.place(x=897, y = 93)
 	b_push = Button(wind, text="Отправка данных на сервер")
-	b_push.config(command=push_time_to_server)
+	b_push.config(command= lambda o = st1: push_time_to_server(o))
 	b_push.place(x=795, y = 140)
 
 def main():

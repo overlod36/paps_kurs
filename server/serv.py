@@ -25,6 +25,10 @@ class TCPHandler(socketserver.BaseRequestHandler):
 						self.request.sendall('Wrong password!'.encode('utf-8'))
 			else:
 				self.request.sendall('No such a user in a system!'.encode('utf-8'))
+		elif l_data[0] == '2':
+			print('Пришло время работы сотрудника...')
+			print('-> ' + l_data[1])
+			self.request.sendall('Time Is On My Side!'.encode('utf-8'))
 
 users_connected = []
 
