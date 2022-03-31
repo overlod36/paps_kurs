@@ -10,6 +10,11 @@ import json
 stop_thread = False
 
 
+
+
+
+
+'''
 class Client:
 	def __init__(self):
 		self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -24,7 +29,7 @@ class Client:
 	def send(self, data):
 		self.client.sendall(data)
 		return self.client.recv(1024)
-
+'''
 
 def connect_func(i_list, wind, w_list):
 	HOST, PORT = "localhost", 8080
@@ -58,6 +63,9 @@ def s_user_interface(wind, w_list):
 	wind.geometry("1024x800+200+100")
 	for obj in w_list:
 		obj.destroy()
+	watcher = Label(wind, text="00:00:00")
+	watcher.place(x=920, y=50)
+
 
 
 
