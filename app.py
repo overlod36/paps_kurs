@@ -26,7 +26,7 @@ class Client:
 		return self.client.recv(1024)
 
 
-def connect_func(i_list, wind):
+def connect_func(i_list, wind, w_list):
 	HOST, PORT = "localhost", 8080
 	data = i_list[0] + " " + i_list[1].get() + " " + i_list[2].get()
 	try:
@@ -38,7 +38,7 @@ def connect_func(i_list, wind):
 			print("Полученная информация -> ", received)
 		if received == 'Authorized!':
 			mb.showinfo("Информация", 'Авторизация прошла успешно!')
-			s_user_interface(wind)
+			s_user_interface(wind, w_list)
 		elif received == 'Wrong password!':
 			mb.showinfo("Ошибка", "Неверно введен пароль!")
 		elif received == 'No such a user in a system!':
@@ -54,9 +54,10 @@ def aboba(root):
 	stop_thread = True
 	root.destroy()
 
-def s_user_interface(wind):
-	u_window = Toplevel(wind)
-	u_window.geometry("1024x800")
+def s_user_interface(wind, w_list):
+	wind.geometry("1024x800+200+100")
+	for obj in w_list:
+		obj.destroy()
 
 
 
@@ -71,7 +72,9 @@ def main():
 	login_label.place(x=190, y =114)
 	password_entry.place(x = 260, y = 174)
 	password_label.place(x = 190, y = 174)
-	b_connect = Button(root, text='Подключение', command=lambda l = ['1', login_entry, password_entry], w = root: connect_func(l, w))
+	obj_l = [login_entry, login_label, password_entry, password_label]
+	b_connect = Button(root, text='Подключение')
+	b_connect.config(command=lambda l = ['1', login_entry, password_entry], w = root, wl = obj_l + [b_connect]: connect_func(l, w, wl))
 	login_entry.place(x = 260, y = 115)
 	b_connect.place(x=243, y=265)
 	root.mainloop()
