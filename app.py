@@ -10,6 +10,39 @@ import json
 stop_thread = False
 
 
+class StWatcher:
+	hours, minutes, seconds = 0, 0, 0
+	status_run = False
+	def __init__(self, lbl):
+		self.label = lbl
+
+	def start(self):
+		if not self.status_run:
+			self.update()
+			self.status_run = True
+		else:
+			self.pause()
+
+	def pause(self):
+		if self.status_run:
+			self.label.after_cancel(update_time)
+			self.status_run = False
+
+	def update(self):
+		self.seconds += 1
+		if self.seconds == 60:
+			self.minutes += 1
+			self.seconds = 0
+		if self.minutes == 60:
+			self.hours += 1
+			self.minutes = 0
+		h_str = f'{self.hours}' if self.hours > 9 else f'0{self.hours}'
+		m_str = f'{self.minutes}' if self.minutes > 9 else f'0{self.minutes}'
+		s_str = f'{self.seconds}' if self.seconds > 9 else f'0{self.seconds}'
+		self.label.config(text=h_str + ':' + m_str + ':' + s_str)
+		global update_time
+		update_time = self.label.after(1000, self.update)
+
 
 
 
@@ -65,6 +98,10 @@ def s_user_interface(wind, w_list):
 		obj.destroy()
 	watcher = Label(wind, text="00:00:00")
 	watcher.place(x=920, y=50)
+	st1 = StWatcher(watcher)
+	b_start = Button(wind, text="Запуск/Пауза")
+	b_start.config(command=st1.start)
+	b_start.place(x=897, y = 93)
 
 
 
