@@ -74,9 +74,11 @@ def connect_func(i_list, wind, w_list):
 			received = str(sock.recv(1024), "utf-8")
 			print("Отправленная информация -> ", str(data))
 			print("Полученная информация -> ", received)
-		if received == 'Authorized!':
-			mb.showinfo("Информация", 'Авторизация прошла успешно!')
+		if received == 'Employee Authorized!':
+			mb.showinfo("Информация", 'Авторизация сотрудника прошла успешно!')
 			s_user_interface(wind, w_list)
+		elif received == 'Admin Authorized!':
+			mb.showinfo("Информация", 'Авторизация администратора прошла успешно!')
 		elif received == 'Wrong password!':
 			mb.showinfo("Ошибка", "Неверно введен пароль!")
 		elif received == 'No such a user in a system!':
