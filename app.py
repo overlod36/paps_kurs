@@ -1,6 +1,7 @@
 import pyautogui
 from threading import Thread
 from tkinter import *
+from tkinter import ttk
 import tkinter.messagebox as mb
 import socket
 import sys
@@ -79,6 +80,7 @@ def connect_func(i_list, wind, w_list):
 			s_user_interface(wind, w_list)
 		elif received == 'Admin Authorized!':
 			mb.showinfo("Информация", 'Авторизация администратора прошла успешно!')
+			s_admin_interface(wind, w_list)
 		elif received == 'Wrong password!':
 			mb.showinfo("Ошибка", "Неверно введен пароль!")
 		elif received == 'No such a user in a system!':
@@ -126,6 +128,28 @@ def s_user_interface(wind, w_list):
 	b_push = Button(wind, text="Отправка данных на сервер")
 	b_push.config(command= lambda o = st1: push_time_to_server(o))
 	b_push.place(x=795, y = 140)
+
+def s_admin_interface(wind, w_list):
+	wind.geometry("600x400+200+100")
+	for obj in w_list:
+		obj.destroy()
+	main_label = Label(wind, text="Страница Администратора")
+	main_label.place(x=205, y=50)
+	login_label = Label(wind, text="Логин нового сотрудника")
+	login_entry = Entry(wind, width=23)
+	login_label.place(x=100, y=120)
+	login_entry.place(x=310, y=122)
+	password_label = Label(wind, text="Пароль нового сотрудника")
+	password_entry = Entry(wind, width=23)
+	password_label.place(x=100, y=165)
+	password_entry.place(x=310, y=167)
+	position_label = Label(wind, text="Статус нового сотрудника")
+	position_entry = ttk.Combobox(wind, width=20, values=["Сотрудник", "Руководитель", "Администратор"])
+	position_label.place(x=100, y=210)
+	position_entry.place(x=310, y=212)
+	add_button = Button(wind, text="Добавить")
+	add_button.place(x=270, y=285)
+
 
 def main():
 	root = Tk()
