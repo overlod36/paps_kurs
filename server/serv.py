@@ -73,9 +73,6 @@ sql_1.execute("""CREATE TABLE IF NOT EXISTS users(
 	) 
 	""")
 
-#db.execute(f"INSERT INTO users VALUES(?,?,?)", ("admin", "admin", 'admin'))
-#db.execute(f"INSERT INTO users VALUES(?,?,?)", ("Dima", "1234", 'employee'))
-#db.execute(f"INSERT INTO users VALUES(?,?,?)", ("moderator", "qwerty", 'header'))
 with socketserver.TCPServer((HOST, PORT), TCPHandler) as serv:
 	print("Сервер запущен! Порт - > ", PORT)
 	serv.serve_forever()
