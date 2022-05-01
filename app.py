@@ -81,6 +81,9 @@ def connect_func(i_list, wind, w_list):
 		elif received == 'Admin Authorized!':
 			mb.showinfo("Информация", 'Авторизация администратора прошла успешно!')
 			s_admin_interface(wind, w_list)
+		elif received == 'Header Authorized!':
+			mb.showinfo("Информация", 'Авторизация руководителя прошла успешно!')
+			s_header_interface(wind, w_list)
 		elif received == 'Wrong password!':
 			mb.showinfo("Ошибка", "Неверно введен пароль!")
 		elif received == 'No such a user in a system!':
@@ -107,6 +110,28 @@ def push_time_to_server(obj):
 	except ConnectionRefusedError:
 		print("Соединение не было установлено!")
 		mb.showinfo('Ошибка', 'Не удалось совершить соединение с сервером!')
+
+def send_new_user(l, p, st):
+	HOST, PORT = "localhost", 8080
+	if st.get() == "Сотрудник":
+		pos = "employee"
+	elif st.get() == "Администратор":
+		pos = "admin"
+	elif st.get() == "Руководитель":
+		pos = "header"
+	res = l.get() + " " + p.get() + " " + pos
+	data = '3' + " " + res
+	try:
+		with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock: #SOCK_STREAM - TCP сокет
+			sock.connect((HOST, PORT))
+			sock.send(json.dumps(data).encode("utf-8"))
+			received = str(sock.recv(1024), "utf-8")
+			print("Отправленная информация -> ", str(data))
+			print("Полученная информация -> ", received)
+	except ConnectionRefusedError:
+		print("Соединение не было установлено!")
+		mb.showinfo('Ошибка', 'Не удалось совершить соединение с сервером!')
+
 		
 
 
@@ -149,6 +174,12 @@ def s_admin_interface(wind, w_list):
 	position_entry.place(x=310, y=212)
 	add_button = Button(wind, text="Добавить")
 	add_button.place(x=270, y=285)
+	add_button.config(command= lambda log = login_entry, passw = password_entry, pos = position_entry : send_new_user(log,passw,pos))
+
+def s_header_interface(wind, w_list):
+	wind.geometry("800x600+200+100")
+	for obj in w_list:
+		obj.destroy()
 
 
 def main():
