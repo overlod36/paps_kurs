@@ -12,7 +12,7 @@ import datetime
 from threading import Timer
 
 stop_thread = False
-
+user_login = ''
 
 class StWatcher:
 	hours, minutes, seconds = 0, 0, 0
@@ -66,8 +66,10 @@ class Client:
 '''
 
 def connect_func(i_list, wind, w_list):
+	global user_login
 	HOST, PORT = "localhost", 8080
 	data = i_list[0] + " " + i_list[1].get() + " " + i_list[2].get()
+	for_log = list(data.split(" "))
 	try:
 		with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock: #SOCK_STREAM - TCP сокет
 			sock.connect((HOST, PORT))
@@ -78,12 +80,15 @@ def connect_func(i_list, wind, w_list):
 		if received == 'Employee Authorized!':
 			mb.showinfo("Информация", 'Авторизация сотрудника прошла успешно!')
 			s_user_interface(wind, w_list)
+			user_login = for_log[1]
 		elif received == 'Admin Authorized!':
 			mb.showinfo("Информация", 'Авторизация администратора прошла успешно!')
 			s_admin_interface(wind, w_list)
+			user_login = for_log[1]
 		elif received == 'Header Authorized!':
 			mb.showinfo("Информация", 'Авторизация руководителя прошла успешно!')
 			s_header_interface(wind, w_list)
+			user_login = for_log[1]
 		elif received == 'Wrong password!':
 			mb.showinfo("Ошибка", "Неверно введен пароль!")
 		elif received == 'No such a user in a system!':
@@ -167,6 +172,26 @@ def get_users(list_u):
 		for el in rec:
 			list_u.insert(END, el)
 
+def get_user_task(list_t):
+	global user_login
+	HOST, PORT = "localhost", 8080
+	data = '4' + " " + 'task_user' + " " + user_login
+	try:
+		with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock: #SOCK_STREAM - TCP сокет
+			sock.connect((HOST, PORT))
+			sock.send(json.dumps(data).encode("utf-8"))
+			received = str(sock.recv(1024), "utf-8")
+			print("Отправленная информация -> ", str(data))
+			print("Полученная информация -> ", received)
+	except ConnectionRefusedError:
+		print("Соединение не было установлено!")
+		mb.showinfo('Ошибка', 'Не удалось совершить соединение с сервером!')
+	if len(received) != 0:
+		list_t.delete(0, END)
+		rec = list(received.split(" "))
+		for el in rec:
+			list_t.insert(END, el)
+
 def get_tasks(list_t):
 	HOST, PORT = "localhost", 8080
 	data = '4' + " " + 'all_tasks'
@@ -186,6 +211,20 @@ def get_tasks(list_t):
 		for el in rec:
 			list_t.insert(END, el)
 
+def link_task(list_t, list_u):
+	HOST, PORT = "localhost", 8080
+	data = '5' + " " + 'link_task ' + list_u.get(list_u.curselection()) + " " + list_t.get(list_t.curselection())
+	try:
+		with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock: #SOCK_STREAM - TCP сокет
+			sock.connect((HOST, PORT))
+			sock.send(json.dumps(data).encode("utf-8"))
+			received = str(sock.recv(1024), "utf-8")
+			print("Отправленная информация -> ", str(data))
+			print("Полученная информация -> ", received)
+	except ConnectionRefusedError:
+		print("Соединение не было установлено!")
+		mb.showinfo('Ошибка', 'Не удалось совершить соединение с сервером!')
+
 def aboba(root):
 	global stop_thread
 	stop_thread = True
@@ -201,9 +240,16 @@ def s_user_interface(wind, w_list):
 	b_start = Button(wind, text="Запуск/Пауза")
 	b_start.config(command=st1.start)
 	b_start.place(x=897, y = 93)
+	tasks_t = Label(wind, text="Задачи")
+	tasks_t.place(x=110, y=15)
 	b_push = Button(wind, text="Отправка данных на сервер")
 	b_push.config(command= lambda o = st1: push_time_to_server(o))
 	b_push.place(x=795, y = 140)
+	tasks_lb = Listbox(wind, width=30, height=5, exportselection=0)
+	tasks_lb.place(x=17, y=45)
+	up_task_button = Button(wind, text="Обновить")
+	up_task_button.place(x=100, y=162)
+	up_task_button.config(command= lambda list_t = tasks_lb : get_user_task(list_t))
 
 def s_admin_interface(wind, w_list):
 	wind.geometry("600x400+200+100")
@@ -233,8 +279,8 @@ def s_header_interface(wind, w_list):
 		obj.destroy()
 	users_t = Label(wind, text="Сотрудники")
 	tasks_t = Label(wind, text="Задачи")
-	tasks_lb = Listbox(wind, width=30, height=5)
-	users_lb = Listbox(wind, width=30, height=5)
+	tasks_lb = Listbox(wind, width=30, height=5, exportselection=0)
+	users_lb = Listbox(wind, width=30, height=5, exportselection=0)
 	users_t.place(x=100, y=15)
 	tasks_t.place(x=372,y=15)
 	users_lb.place(x=17, y=45)
@@ -246,12 +292,15 @@ def s_header_interface(wind, w_list):
 	update_u_button = Button(wind, text="Обновить")
 	update_u_button.place(x=100, y=162)
 	update_t_button = Button(wind, text="Обновить")
-	update_t_button.place(x=300, y=162)
+	update_t_button.place(x=365, y=162)
 	add_t_button = Button(wind, text="Добавить")
 	add_t_button.place(x=380, y=212)
 	add_t_button.config(command= lambda t_name = task_name_entry, t_descr = task_descr_entry : add_task(t_name, t_descr))
 	update_t_button.config(command= lambda list_t = tasks_lb : get_tasks(list_t))
 	update_u_button.config(command= lambda list_u = users_lb : get_users(list_u))
+	link_button = Button(wind, text="Назначить")
+	link_button.place(x=380, y=250)
+	link_button.config(command= lambda list_t = tasks_lb, list_u = users_lb : link_task(list_t, list_u))
 
 
 def main():
