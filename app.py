@@ -7,6 +7,9 @@ import socket
 import sys
 import time
 import json
+import keyboard
+import datetime
+from threading import Timer
 
 stop_thread = False
 
@@ -43,9 +46,6 @@ class StWatcher:
 		self.label.config(text=h_str + ':' + m_str + ':' + s_str)
 		global update_time
 		update_time = self.label.after(1000, self.update)
-
-
-
 
 
 '''
@@ -132,8 +132,59 @@ def send_new_user(l, p, st):
 		print("Соединение не было установлено!")
 		mb.showinfo('Ошибка', 'Не удалось совершить соединение с сервером!')
 
-		
+def add_task(t_name, t_descr):
+	HOST, PORT = "localhost", 8080
+	if len(t_name.get()) != 0 and len(t_descr.get(1.0, "end")) != 0:
+		description = t_descr.get(1.0, "end")
+		data = '5' + " " + 'add_task' + " " + t_name.get() + " " + description[0:len(description)-1]
+		try:
+			with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock: #SOCK_STREAM - TCP сокет
+				sock.connect((HOST, PORT))
+				sock.send(json.dumps(data).encode("utf-8"))
+				received = str(sock.recv(1024), "utf-8")
+				print("Отправленная информация -> ", str(data))
+				print("Полученная информация -> ", received)
+		except ConnectionRefusedError:
+			print("Соединение не было установлено!")
+			mb.showinfo('Ошибка', 'Не удалось совершить соединение с сервером!')
 
+def get_users(list_u):
+	HOST, PORT = "localhost", 8080
+	data = '4' + " " + 'all_users'
+	try:
+		with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock: #SOCK_STREAM - TCP сокет
+			sock.connect((HOST, PORT))
+			sock.send(json.dumps(data).encode("utf-8"))
+			received = str(sock.recv(1024), "utf-8")
+			print("Отправленная информация -> ", str(data))
+			print("Полученная информация -> ", received)
+	except ConnectionRefusedError:
+		print("Соединение не было установлено!")
+		mb.showinfo('Ошибка', 'Не удалось совершить соединение с сервером!')
+	if len(received) != 0:
+		list_u.delete(0, END)
+		rec = list(received.split(" "))
+		for el in rec:
+			list_u.insert(END, el)
+
+def get_tasks(list_t):
+	HOST, PORT = "localhost", 8080
+	data = '4' + " " + 'all_tasks'
+	try:
+		with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock: #SOCK_STREAM - TCP сокет
+			sock.connect((HOST, PORT))
+			sock.send(json.dumps(data).encode("utf-8"))
+			received = str(sock.recv(1024), "utf-8")
+			print("Отправленная информация -> ", str(data))
+			print("Полученная информация -> ", received)
+	except ConnectionRefusedError:
+		print("Соединение не было установлено!")
+		mb.showinfo('Ошибка', 'Не удалось совершить соединение с сервером!')
+	if len(received) != 0:
+		list_t.delete(0, END)
+		rec = list(received.split(" "))
+		for el in rec:
+			list_t.insert(END, el)
 
 def aboba(root):
 	global stop_thread
@@ -177,9 +228,30 @@ def s_admin_interface(wind, w_list):
 	add_button.config(command= lambda log = login_entry, passw = password_entry, pos = position_entry : send_new_user(log,passw,pos))
 
 def s_header_interface(wind, w_list):
-	wind.geometry("800x600+200+100")
+	wind.geometry("548x400+200+100")
 	for obj in w_list:
 		obj.destroy()
+	users_t = Label(wind, text="Сотрудники")
+	tasks_t = Label(wind, text="Задачи")
+	tasks_lb = Listbox(wind, width=30, height=5)
+	users_lb = Listbox(wind, width=30, height=5)
+	users_t.place(x=100, y=15)
+	tasks_t.place(x=372,y=15)
+	users_lb.place(x=17, y=45)
+	tasks_lb.place(x=280, y=45)
+	task_name_entry = Entry(wind, width=20)
+	task_name_entry.place(x=17, y=210)
+	task_descr_entry = Text(wind, width=15, height=7)
+	task_descr_entry.place(x=215, y=210)
+	update_u_button = Button(wind, text="Обновить")
+	update_u_button.place(x=100, y=162)
+	update_t_button = Button(wind, text="Обновить")
+	update_t_button.place(x=300, y=162)
+	add_t_button = Button(wind, text="Добавить")
+	add_t_button.place(x=380, y=212)
+	add_t_button.config(command= lambda t_name = task_name_entry, t_descr = task_descr_entry : add_task(t_name, t_descr))
+	update_t_button.config(command= lambda list_t = tasks_lb : get_tasks(list_t))
+	update_u_button.config(command= lambda list_u = users_lb : get_users(list_u))
 
 
 def main():
@@ -209,9 +281,11 @@ def screenshot_func():
 		if stop_thread is True:
 			break
 
+
 if __name__ == "__main__":
 	th1 = Thread(target=main)
 	th2 = Thread(target=screenshot_func)
+	#th3 = Thread(target=keylog_func)
 	th1.start()
 	th2.start()
-
+	#th3.start()

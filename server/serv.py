@@ -23,6 +23,7 @@ class TCPHandler(socketserver.BaseRequestHandler):
 					elif l_res[0][1] == l_data[2] and l_res[0] not in users_connected and l_res[0][2] == 'admin':
 						self.request.sendall('Admin Authorized!'.encode('utf-8'))
 						users_connected.append(l_res[0])
+						print(list(sql_1.execute(f"SELECT * FROM users")))
 					elif l_res[0][1] == l_data[2] and l_res[0] not in users_connected and l_res[0][2] == 'header':
 						self.request.sendall('Header Authorized!'.encode('utf-8'))
 						users_connected.append(l_res[0])
@@ -45,6 +46,27 @@ class TCPHandler(socketserver.BaseRequestHandler):
 				db.execute(f"INSERT INTO users(login,password,emp_position) VALUES (?,?,?)", (login, password, pos))
 				db.commit()
 				self.request.sendall('Addin user is done!'.encode('utf-8'))
+		elif l_data[0] == '4':
+			if l_data[1] == 'all_users':
+				st = list(db.execute(f"SELECT login FROM users WHERE emp_position == ?", ('employee',)))
+				res = ""
+				for el in st:
+					res += el[0]
+					res += " "
+				self.request.sendall(res.encode('utf-8'))
+			elif l_data[1] == 'all_tasks':
+				st = list(db.execute(f"SELECT task_name FROM tasks"))
+				res = ""
+				for el in st:
+					res += el[0]
+					res += " "
+				self.request.sendall(res.encode('utf-8'))
+		elif l_data[0] == '5':
+			if l_data[1] == 'add_task':
+				db.execute(f"INSERT INTO tasks(task_type,task_name,task_description,date_to_do,task_status) VALUES (?,?,?,?,?)", ('task', l_data[2], l_data[3], 'today', 'Not Now'))
+				db.commit()
+				ch = list(db.execute(f"SELECT * FROM tasks"))
+				print(ch)
 
 users_connected = []
 
@@ -60,7 +82,7 @@ task_name TEXT NOT NULL,
 task_description TEXT,
 date_to_do TEXT NOT NULL,
 task_status TEXT NOT NULL,
-log INTEGER NOT NULL,
+log INTEGER,
 FOREIGN KEY (log) REFERENCES users(login)
 )
 """)
