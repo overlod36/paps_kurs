@@ -253,26 +253,46 @@ def aboba(root):
 	stop_thread = True
 	root.destroy()
 
+def user_choose(tb, but):
+	global user_login
+	HOST, PORT = "localhost", 8080
+	data = '6' + " " + 'choose_task' + " " + tb.get(tb.curselection()) + " " + user_login
+	try:
+		with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock: #SOCK_STREAM - TCP сокет
+			sock.connect((HOST, PORT))
+			sock.send(json.dumps(data).encode("utf-8"))
+			received = str(sock.recv(1024), "utf-8")
+			print("Отправленная информация -> ", str(data))
+			print("Полученная информация -> ", received)
+	except ConnectionRefusedError:
+		print("Соединение не было установлено!")
+		mb.showinfo('Ошибка', 'Не удалось совершить соединение с сервером!')
+
+
 def s_user_interface(wind, w_list):
-	wind.geometry("1024x800+200+100")
+	wind.geometry("724x400+200+100")
 	for obj in w_list:
 		obj.destroy()
 	watcher = Label(wind, text="00:00:00")
-	watcher.place(x=920, y=50)
+	watcher.place(x=620, y=50)
 	st1 = StWatcher(watcher)
 	b_start = Button(wind, text="Запуск/Пауза")
 	b_start.config(command=st1.start)
-	b_start.place(x=897, y = 93)
+	b_start.place(x=597, y = 93)
 	tasks_t = Label(wind, text="Задачи")
 	tasks_t.place(x=110, y=15)
 	b_push = Button(wind, text="Отправка данных на сервер")
 	b_push.config(command= lambda o = st1: push_time_to_server(o))
-	b_push.place(x=795, y = 140)
+	b_push.place(x=495, y = 140)
 	tasks_lb = Listbox(wind, width=30, height=5, exportselection=0)
 	tasks_lb.place(x=17, y=45)
 	up_task_button = Button(wind, text="Обновить")
 	up_task_button.place(x=100, y=162)
 	up_task_button.config(command= lambda list_t = tasks_lb : get_user_task(list_t))
+	choose_task_button = Button(wind, text="Выполнять")
+	choose_task_button.place(x=95, y=202)
+	choose_task_button.config(command= lambda tb = tasks_lb, but = choose_task_button : user_choose(tb, but))
+
 
 def admin_show(ul):
 	HOST, PORT = "localhost", 8080
@@ -325,7 +345,7 @@ def s_admin_interface(wind, w_list):
 	users_list = Listbox(wind, width=45, height=5)
 	users_list.place(x=524,y=100)
 	update_button = Button(wind, text="Обновить")
-	update_button.place(x=658, y=230)
+	update_button.place(x=665, y=230)
 	update_button.config(command=lambda ul = users_list : admin_show(ul))
 
 

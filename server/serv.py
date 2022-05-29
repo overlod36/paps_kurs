@@ -74,7 +74,7 @@ class TCPHandler(socketserver.BaseRequestHandler):
 				if str(type(st[0][0])) != "<class 'NoneType'>":
 					res = st[0][0] + " " + st[0][1]
 				else:
-					res = 'NOT_APOINTED' + " " + st[0][1]
+					res = 'NO_EMPLOYEE' + " " + st[0][1]
 				self.request.sendall(res.encode('utf-8'))
 			elif l_data[1] == 'admin_request':
 				res = ''
@@ -87,19 +87,30 @@ class TCPHandler(socketserver.BaseRequestHandler):
 		elif l_data[0] == '5':
 			if l_data[1] == 'add_task':
 				print('Добавление задачи -> ' + l_data[2])
-				db.execute(f"INSERT INTO tasks(task_type,task_name,task_description,date_to_do,task_status) VALUES (?,?,?,?,?)", ('task', l_data[2], l_data[3], 'today', 'Not Now'))
+				db.execute(f"INSERT INTO tasks(task_type,task_name,task_description,date_to_do,task_status) VALUES (?,?,?,?,?)", ('task', l_data[2], l_data[3], 'today', 'NOT_APPOINTED'))
 				db.commit()
 				ch = list(db.execute(f"SELECT * FROM tasks"))
 				print(ch)
 			elif l_data[1] == 'link_task':
 				src = list(db.execute(f"SELECT log FROM tasks WHERE task_name == ?", (l_data[3],)))
 				if src[0][0] == None:
-					db.execute(f"UPDATE tasks SET log = ? WHERE task_name = ?", (l_data[2], l_data[3]))
+					db.execute(f"UPDATE tasks SET log = ?, task_status = ? WHERE task_name = ?", (l_data[2], 'APPOINTED' ,l_data[3]))
 					db.commit()
 					print("Задача " + l_data[3] + " назначена сотруднику -> " + l_data[2])
 				else:
-					print(src)
 					print('Задача уже назначена!')
+		elif l_data[0] == '6':
+			if l_data[1] == 'choose_task':
+				bool_stuff = False
+				print('Проверка текущей задачи сотрудника -> ')
+				for_check = list(db.execute(f"SELECT task_status FROM tasks WHERE log = ?", (l_data[3],)))
+				for el in for_check:
+					if el[0] == 'IN_PROGRESS':
+						bool_stuff = True
+				if not bool_stuff:
+					print('Начинается выполнение задачи -> ' + l_data[2])
+					db.execute(f"UPDATE tasks SET task_status = ? WHERE task_name = ?", ('IN_PROGRESS',l_data[2]))
+					db.commit()
 
 users_connected = []
 
@@ -108,6 +119,7 @@ sql_1 = db.cursor()
 
 HOST = "localhost"
 PORT = 8080
+
 sql_1.execute("""CREATE TABLE IF NOT EXISTS tasks(
 task_id INTEGER PRIMARY KEY,
 task_type TEXT NOT NULL,
@@ -116,17 +128,23 @@ task_description TEXT,
 date_to_do TEXT NOT NULL,
 task_status TEXT NOT NULL,
 log INTEGER,
-FOREIGN KEY (log) REFERENCES users(login)
+FOREIGN KEY (log) REFERENCES users(login),
+UNIQUE(task_name)
 )
 """)
+
 
 sql_1.execute("""CREATE TABLE IF NOT EXISTS users(
 	login TEXT PRIMARY KEY,
 	password TEXT NOT NULL,
 	emp_position TEXT NOT NULL,
 	UNIQUE(password)
-	) 
-	""")
+) 
+""")
+
+#sql_1.execute("""DROP TABLE tasks""")
+
+
 
 with socketserver.TCPServer((HOST, PORT), TCPHandler) as serv:
 	print("Сервер запущен! Порт - > ", PORT)
