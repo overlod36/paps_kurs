@@ -101,16 +101,45 @@ class TCPHandler(socketserver.BaseRequestHandler):
 					print('Задача уже назначена!')
 		elif l_data[0] == '6':
 			if l_data[1] == 'choose_task':
-				bool_stuff = False
-				print('Проверка текущей задачи сотрудника -> ')
+				bool_stuff = 0
+				print('Проверка текущей задачи сотрудника -> ' + l_data[3])
+				print(list(db.execute(f"SELECT * FROM tasks")))
 				for_check = list(db.execute(f"SELECT task_status FROM tasks WHERE log = ?", (l_data[3],)))
 				for el in for_check:
 					if el[0] == 'IN_PROGRESS':
-						bool_stuff = True
-				if not bool_stuff:
+						bool_stuff = 1
+						break
+					elif el[0] == 'IN_PAUSE':
+						bool_stuff = 2
+						break
+
+				if bool_stuff == 0:
 					print('Начинается выполнение задачи -> ' + l_data[2])
 					db.execute(f"UPDATE tasks SET task_status = ? WHERE task_name = ?", ('IN_PROGRESS',l_data[2]))
 					db.commit()
+					self.request.sendall('to_start'.encode('utf-8'))
+				elif bool_stuff == 1:
+					print('Сотрудник уже выполняет задачу!')
+					self.request.sendall('not_to_start'.encode('utf-8'))
+				elif bool_stuff == 2:
+					rs = list(db.execute(f"SELECT task_status FROM tasks WHERE task_name = ?", (l_data[2],)))
+					if rs[0][0] == 'IN_PAUSE':
+						print('Продолжается выполнение задачи!')
+						res = list(db.execute(f"SELECT doing_time FROM tasks WHERE task_name = ?", (l_data[2],)))
+						db.execute(f"UPDATE tasks SET task_status = ? WHERE task_name = ?", ('IN_PROGRESS',l_data[2]))
+						db.commit()
+						st = 'after_pause ' + res[0][0]
+						self.request.sendall(st.encode('utf-8'))
+					else:
+						print('Начинается выполнение задачи -> ' + l_data[2])
+						db.execute(f"UPDATE tasks SET task_status = ? WHERE task_name = ?", ('IN_PROGRESS',l_data[2]))
+						db.commit()
+						self.request.sendall('to_start'.encode('utf-8'))
+
+			elif l_data[1] == 'set_time':
+				db.execute(f"UPDATE tasks SET doing_time = ?, task_status = ? WHERE log = ?", (l_data[3], 'IN_PAUSE' , l_data[2]))
+				db.commit()
+				print('Остановка выполнения работы!')
 
 users_connected = []
 
@@ -126,6 +155,7 @@ task_type TEXT NOT NULL,
 task_name TEXT NOT NULL,
 task_description TEXT,
 date_to_do TEXT NOT NULL,
+doing_time TEXT,
 task_status TEXT NOT NULL,
 log INTEGER,
 FOREIGN KEY (log) REFERENCES users(login),
