@@ -61,14 +61,32 @@ class TCPHandler(socketserver.BaseRequestHandler):
 					res += " "
 				self.request.sendall(res.encode('utf-8'))
 			elif l_data[1] == 'task_user':
+				print('Отображение задач пользователя -> ' + l_data[2])
 				st = list(db.execute(f"SELECT task_name FROM tasks WHERE log == ?", (l_data[2],)))
 				res = ""
 				for el in st:
 					res += el[0]
 					res += " "
 				self.request.sendall(res.encode('utf-8'))
+			elif l_data[1] == 'check_task':
+				print('Проверка статуса задачи -> ' + l_data[2])
+				st = list(db.execute(f"SELECT log, task_status FROM tasks WHERE task_name == ?", (l_data[2],)))
+				if str(type(st[0][0])) != "<class 'NoneType'>":
+					res = st[0][0] + " " + st[0][1]
+				else:
+					res = 'NOT_APOINTED' + " " + st[0][1]
+				self.request.sendall(res.encode('utf-8'))
+			elif l_data[1] == 'admin_request':
+				res = ''
+				print('Администратор запрашивает список пользователей!')
+				st = list(db.execute(f"SELECT login, password, emp_position FROM users"))
+				for el in st:
+					res += (el[0] + ' ' + el[1] + ' ' + el[2] + ' ')
+				self.request.sendall(res.encode('utf-8'))
+
 		elif l_data[0] == '5':
 			if l_data[1] == 'add_task':
+				print('Добавление задачи -> ' + l_data[2])
 				db.execute(f"INSERT INTO tasks(task_type,task_name,task_description,date_to_do,task_status) VALUES (?,?,?,?,?)", ('task', l_data[2], l_data[3], 'today', 'Not Now'))
 				db.commit()
 				ch = list(db.execute(f"SELECT * FROM tasks"))
@@ -78,6 +96,7 @@ class TCPHandler(socketserver.BaseRequestHandler):
 				if src[0][0] == None:
 					db.execute(f"UPDATE tasks SET log = ? WHERE task_name = ?", (l_data[2], l_data[3]))
 					db.commit()
+					print("Задача " + l_data[3] + " назначена сотруднику -> " + l_data[2])
 				else:
 					print(src)
 					print('Задача уже назначена!')

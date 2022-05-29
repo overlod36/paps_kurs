@@ -211,6 +211,29 @@ def get_tasks(list_t):
 		for el in rec:
 			list_t.insert(END, el)
 
+def checkin_task(td, status, user):
+	HOST, PORT = "localhost", 8080
+	data = '4' + " " + 'check_task ' + td.get(td.curselection())
+	try:
+		with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock: #SOCK_STREAM - TCP сокет
+			sock.connect((HOST, PORT))
+			sock.send(json.dumps(data).encode("utf-8"))
+			received = str(sock.recv(1024), "utf-8")
+			print("Отправленная информация -> ", str(data))
+			print("Полученная информация -> ", received)
+	except ConnectionRefusedError:
+		print("Соединение не было установлено!")
+		mb.showinfo('Ошибка', 'Не удалось совершить соединение с сервером!')
+	res = list(received.split(' '))
+	user.config(state="normal")
+	status.config(state="normal")
+	user.delete(0, END)
+	status.delete(0, END)
+	user.insert(END, res[0])
+	status.insert(END, res[1])
+	user.config(state="disabled")
+	status.config(state="disabled")
+
 def link_task(list_t, list_u):
 	HOST, PORT = "localhost", 8080
 	data = '5' + " " + 'link_task ' + list_u.get(list_u.curselection()) + " " + list_t.get(list_t.curselection())
@@ -251,12 +274,39 @@ def s_user_interface(wind, w_list):
 	up_task_button.place(x=100, y=162)
 	up_task_button.config(command= lambda list_t = tasks_lb : get_user_task(list_t))
 
+def admin_show(ul):
+	HOST, PORT = "localhost", 8080
+	data = '4' + " " + 'admin_request'
+	try:
+		with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock: #SOCK_STREAM - TCP сокет
+			sock.connect((HOST, PORT))
+			sock.send(json.dumps(data).encode("utf-8"))
+			received = str(sock.recv(1024), "utf-8")
+			print("Отправленная информация -> ", str(data))
+			print("Полученная информация -> ", received)
+	except ConnectionRefusedError:
+		print("Соединение не было установлено!")
+		mb.showinfo('Ошибка', 'Не удалось совершить соединение с сервером!')
+	res = list(received.split(" "))
+	res = res[:len(res)-1]
+	ul.delete(0, END)
+	for i in range(0,len(res)-2,3):
+		if res[i+2] == 'employee':
+			ul.insert(END, "Логин: " + res[i] + " | Пароль: " + res[i+1] + " | Сотрудник")
+		elif res[i+2] == 'header':
+			ul.insert(END, "Логин: " + res[i] + " | Пароль: " + res[i+1] + " | Руководитель")
+		elif res[i+2] == 'admin':
+			ul.insert(END, "Логин: " + res[i] + " | Пароль: " + res[i+1] + " | Администратор")
+		
+
 def s_admin_interface(wind, w_list):
-	wind.geometry("600x400+200+100")
+	wind.geometry("950x400+200+100")
 	for obj in w_list:
 		obj.destroy()
 	main_label = Label(wind, text="Страница Администратора")
 	main_label.place(x=205, y=50)
+	list_label = Label(wind, text="Список пользователей")
+	list_label.place(x=622, y=50)
 	login_label = Label(wind, text="Логин нового сотрудника")
 	login_entry = Entry(wind, width=23)
 	login_label.place(x=100, y=120)
@@ -272,19 +322,36 @@ def s_admin_interface(wind, w_list):
 	add_button = Button(wind, text="Добавить")
 	add_button.place(x=270, y=285)
 	add_button.config(command= lambda log = login_entry, passw = password_entry, pos = position_entry : send_new_user(log,passw,pos))
+	users_list = Listbox(wind, width=45, height=5)
+	users_list.place(x=524,y=100)
+	update_button = Button(wind, text="Обновить")
+	update_button.place(x=658, y=230)
+	update_button.config(command=lambda ul = users_list : admin_show(ul))
+
 
 def s_header_interface(wind, w_list):
-	wind.geometry("548x400+200+100")
+	wind.geometry("748x400+200+100")
 	for obj in w_list:
 		obj.destroy()
 	users_t = Label(wind, text="Сотрудники")
 	tasks_t = Label(wind, text="Задачи")
+	status = Label(wind, text="Статус задачи")
+	user_to_do = Label(wind, text="Исполняющий задачу")
 	tasks_lb = Listbox(wind, width=30, height=5, exportselection=0)
 	users_lb = Listbox(wind, width=30, height=5, exportselection=0)
+	st_entry = Entry(wind, width=15, state='disabled')
+	st_user_entry = Entry(wind, width=15, state='disabled')
 	users_t.place(x=100, y=15)
 	tasks_t.place(x=372,y=15)
 	users_lb.place(x=17, y=45)
 	tasks_lb.place(x=280, y=45)
+	status.place(x=580, y=15)
+	st_entry.place(x=570,y=45)
+	user_to_do.place(x=550,y=74)
+	check_button = Button(wind, text="Проверить")
+	st_user_entry.place(x=570, y=100)
+	check_button.place(x=586, y=140)
+	check_button.config(command= lambda td = tasks_lb, status = st_entry, user = st_user_entry : checkin_task(td, status, user))
 	task_name_entry = Entry(wind, width=20)
 	task_name_entry.place(x=17, y=210)
 	task_descr_entry = Text(wind, width=15, height=7)
