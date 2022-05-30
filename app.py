@@ -283,6 +283,7 @@ def user_choose(tb, but, obj):
 		print('Работа уже началась...')
 	else:
 		res = list(received.split(' '))
+		print(res)
 		obj.set_time(res[1])
 		obj.start()
 

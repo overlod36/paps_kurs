@@ -130,7 +130,7 @@ class TCPHandler(socketserver.BaseRequestHandler):
 						db.commit()
 						st = 'after_pause ' + res[0][0]
 						self.request.sendall(st.encode('utf-8'))
-					else:
+					elif rs[0][0] == 'APPOINTED':
 						print('Начинается выполнение задачи -> ' + l_data[2])
 						db.execute(f"UPDATE tasks SET task_status = ? WHERE task_name = ?", ('IN_PROGRESS',l_data[2]))
 						db.commit()
