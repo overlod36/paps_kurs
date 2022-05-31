@@ -382,7 +382,37 @@ def s_admin_interface(wind, w_list):
 	update_button.config(command=lambda ul = users_list : admin_show(ul))
 
 def final_check(td):
-	pass
+	HOST, PORT = "localhost", 8080
+	data = '6' + " " + 'check_for_final' + " " + td.get(td.curselection())
+	try:
+		with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock: #SOCK_STREAM - TCP сокет
+			sock.connect((HOST, PORT))
+			sock.send(json.dumps(data).encode("utf-8"))
+			received = str(sock.recv(1024), "utf-8")
+			print("Отправленная информация -> ", str(data))
+			print("Полученная информация -> ", received)
+	except ConnectionRefusedError:
+		print("Соединение не было установлено!")
+		mb.showinfo('Ошибка', 'Не удалось совершить соединение с сервером!')
+	if received == "yes":
+		answer = mb.askyesno(title="Возник вопрос...", message="Одобрить выполненную задачу?")
+		if answer:
+			data = '6' + " " + 'final_yes' + " " + td.get(td.curselection())
+		else:
+			data = '6' + " " + 'final_no' + " " + td.get(td.curselection())
+		try:
+			with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock: #SOCK_STREAM - TCP сокет
+				sock.connect((HOST, PORT))
+				sock.send(json.dumps(data).encode("utf-8"))
+				received = str(sock.recv(1024), "utf-8")
+				print("Отправленная информация -> ", str(data))
+				print("Полученная информация -> ", received)
+		except ConnectionRefusedError:
+			print("Соединение не было установлено!")
+			mb.showinfo('Ошибка', 'Не удалось совершить соединение с сервером!')
+	else:
+		mb.showerror('Ошибка', 'Задача еще не готова к проверке!')
+
 
 def s_header_interface(wind, w_list):
 	wind.geometry("748x400+200+100")

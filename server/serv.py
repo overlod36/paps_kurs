@@ -145,6 +145,16 @@ class TCPHandler(socketserver.BaseRequestHandler):
 			elif l_data[1] == 'check':
 				print('Задача -> ' + l_data[2] + ' отправлена на проверку!')
 				db.execute(f"UPDATE tasks SET task_status = ?, doing_time = ? WHERE task_name = ?", ('CHECKING', l_data[3], l_data[2]))
+			elif l_data[1] == 'final_yes':
+				print(l_data)
+			elif l_data[1] == 'final_no':
+				print(l_data)
+			elif l_data[1] == 'check_for_final':
+				ls = list(db.execute(f"SELECT task_status FROM tasks WHERE task_name = ?", (l_data[2],)))
+				if ls[0][0] == 'CHECKING':
+					self.request.sendall('yes'.encode('utf-8'))
+				else:
+					self.request.sendall('no'.encode('utf-8'))
 
 users_connected = []
 
