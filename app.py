@@ -105,13 +105,13 @@ def connect_func(i_list, wind, w_list):
 		print("Соединение не было установлено!")
 		mb.showinfo('Ошибка', 'Не удалось совершить соединение с сервером!')
 	
-def push_time_to_server(obj):
+def push_time_to_server(obj, tl):
 	global user_login
 	obj.pause()
 	HOST, PORT = "localhost", 8080
 	st1, st2, st3 =  f'{obj.hours}' if obj.hours > 9 else f'0{obj.hours}', f'{obj.minutes}' if obj.minutes > 9 else f'0{obj.minutes}', f'{obj.seconds}' if obj.seconds > 9 else f'0{obj.seconds}'
 	res = st1 + ':' + st2 + ':' + st3
-	data = '6' + " " + 'set_time ' + user_login + " " + res
+	data = '6' + " " + 'set_time ' + tl.get(tl.curselection()) + " " + res
 	try:
 		with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock: #SOCK_STREAM - TCP сокет
 			sock.connect((HOST, PORT))
@@ -287,6 +287,21 @@ def user_choose(tb, but, obj):
 		obj.set_time(res[1])
 		obj.start()
 
+def send_task(tl, obj):
+	HOST, PORT = "localhost", 8080
+	st1, st2, st3 =  f'{obj.hours}' if obj.hours > 9 else f'0{obj.hours}', f'{obj.minutes}' if obj.minutes > 9 else f'0{obj.minutes}', f'{obj.seconds}' if obj.seconds > 9 else f'0{obj.seconds}'
+	res = st1 + ':' + st2 + ':' + st3
+	data = '6' + " " + 'check' + " " + tl.get(tl.curselection()) + " " + res
+	try:
+		with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock: #SOCK_STREAM - TCP сокет
+			sock.connect((HOST, PORT))
+			sock.send(json.dumps(data).encode("utf-8"))
+			received = str(sock.recv(1024), "utf-8")
+			print("Отправленная информация -> ", str(data))
+			print("Полученная информация -> ", received)
+	except ConnectionRefusedError:
+		print("Соединение не было установлено!")
+		mb.showinfo('Ошибка', 'Не удалось совершить соединение с сервером!')
 
 def s_user_interface(wind, w_list):
 	wind.geometry("724x400+200+100")
@@ -298,7 +313,6 @@ def s_user_interface(wind, w_list):
 	tasks_t = Label(wind, text="Задачи")
 	tasks_t.place(x=110, y=15)
 	b_push = Button(wind, text="Пауза")
-	b_push.config(command= lambda o = st1: push_time_to_server(o))
 	b_push.place(x=495, y = 140)
 	tasks_lb = Listbox(wind, width=30, height=5, exportselection=0)
 	tasks_lb.place(x=17, y=45)
@@ -308,7 +322,10 @@ def s_user_interface(wind, w_list):
 	choose_task_button = Button(wind, text="Выполнять")
 	choose_task_button.place(x=95, y=202)
 	choose_task_button.config(command= lambda tb = tasks_lb, but = choose_task_button, obj = st1 : user_choose(tb, but, obj))
-
+	b_push.config(command= lambda o = st1, tl = tasks_lb: push_time_to_server(o, tl))
+	send_check = Button(wind, text="На проверку")
+	send_check.place(x=90, y=245)
+	send_check.config(command= lambda obj = st1, tl = tasks_lb : send_task(tl, obj))
 
 def admin_show(ul):
 	HOST, PORT = "localhost", 8080

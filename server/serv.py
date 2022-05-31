@@ -102,6 +102,7 @@ class TCPHandler(socketserver.BaseRequestHandler):
 		elif l_data[0] == '6':
 			if l_data[1] == 'choose_task':
 				bool_stuff = 0
+
 				print('Проверка текущей задачи сотрудника -> ' + l_data[3])
 				print(list(db.execute(f"SELECT * FROM tasks")))
 				for_check = list(db.execute(f"SELECT task_status FROM tasks WHERE log = ?", (l_data[3],)))
@@ -111,7 +112,6 @@ class TCPHandler(socketserver.BaseRequestHandler):
 						break
 					elif el[0] == 'IN_PAUSE':
 						bool_stuff = 2
-						break
 
 				if bool_stuff == 0:
 					print('Начинается выполнение задачи -> ' + l_data[2])
@@ -137,9 +137,13 @@ class TCPHandler(socketserver.BaseRequestHandler):
 						self.request.sendall('to_start'.encode('utf-8'))
 
 			elif l_data[1] == 'set_time':
-				db.execute(f"UPDATE tasks SET doing_time = ?, task_status = ? WHERE log = ?", (l_data[3], 'IN_PAUSE' , l_data[2]))
+				print('Проверка текущей задачи сотрудника -> ' + l_data[3])
+				print(list(db.execute(f"SELECT * FROM tasks")))
+				db.execute(f"UPDATE tasks SET doing_time = ?, task_status = ? WHERE task_name = ?", (l_data[3], 'IN_PAUSE' , l_data[2]))
 				db.commit()
 				print('Остановка выполнения работы!')
+			elif l_data[1] == 'check':
+				print(l_data)
 
 users_connected = []
 
