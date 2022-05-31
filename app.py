@@ -381,6 +381,8 @@ def s_admin_interface(wind, w_list):
 	update_button.place(x=665, y=230)
 	update_button.config(command=lambda ul = users_list : admin_show(ul))
 
+def final_check(td):
+	pass
 
 def s_header_interface(wind, w_list):
 	wind.geometry("748x400+200+100")
@@ -412,7 +414,7 @@ def s_header_interface(wind, w_list):
 	update_u_button = Button(wind, text="Обновить")
 	update_u_button.place(x=100, y=162)
 	update_t_button = Button(wind, text="Обновить")
-	update_t_button.place(x=365, y=162)
+	update_t_button.place(x=320, y=162) #here
 	add_t_button = Button(wind, text="Добавить")
 	add_t_button.place(x=380, y=212)
 	add_t_button.config(command= lambda t_name = task_name_entry, t_descr = task_descr_entry : add_task(t_name, t_descr))
@@ -421,7 +423,9 @@ def s_header_interface(wind, w_list):
 	link_button = Button(wind, text="Назначить")
 	link_button.place(x=380, y=250)
 	link_button.config(command= lambda list_t = tasks_lb, list_u = users_lb : link_task(list_t, list_u))
-
+	final_button = Button(wind, text="Вердикт")
+	final_button.place(x=410, y=162)
+	final_button.config(command= lambda td=tasks_lb : final_check(td))
 
 def main():
 	root = Tk()

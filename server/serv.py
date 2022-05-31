@@ -62,7 +62,7 @@ class TCPHandler(socketserver.BaseRequestHandler):
 				self.request.sendall(res.encode('utf-8'))
 			elif l_data[1] == 'task_user':
 				print('Отображение задач пользователя -> ' + l_data[2])
-				st = list(db.execute(f"SELECT task_name FROM tasks WHERE log == ?", (l_data[2],)))
+				st = list(db.execute(f"SELECT task_name FROM tasks WHERE log == ? AND task_status != ? AND task_status != ?", (l_data[2], 'CHECKING', 'DONE')))
 				res = ""
 				for el in st:
 					res += el[0]
@@ -143,7 +143,8 @@ class TCPHandler(socketserver.BaseRequestHandler):
 				db.commit()
 				print('Остановка выполнения работы!')
 			elif l_data[1] == 'check':
-				print(l_data)
+				print('Задача -> ' + l_data[2] + ' отправлена на проверку!')
+				db.execute(f"UPDATE tasks SET task_status = ?, doing_time = ? WHERE task_name = ?", ('CHECKING', l_data[3], l_data[2]))
 
 users_connected = []
 
