@@ -194,8 +194,8 @@ def get_user_task(list_t):
 	except ConnectionRefusedError:
 		print("Соединение не было установлено!")
 		mb.showinfo('Ошибка', 'Не удалось совершить соединение с сервером!')
+	list_t.delete(0, END)
 	if len(received) != 0:
-		list_t.delete(0, END)
 		rec = list(received.split(" "))
 		for el in rec:
 			list_t.insert(END, el)
