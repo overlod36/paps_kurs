@@ -10,6 +10,7 @@ import json
 import keyboard
 import datetime
 from threading import Timer
+from docxtpl import DocxTemplate
 
 stop_thread = False
 user_login = ''
@@ -256,11 +257,21 @@ def link_task(list_t, list_u):
 		print("Соединение не было установлено!")
 		mb.showinfo('Ошибка', 'Не удалось совершить соединение с сервером!')
 
+def time_ch():
+    return str(str(datetime.datetime.now()).split()[0] + " " + str(datetime.datetime.now()).split()[1][:8]).replace(":", "-")
+
+def create_docx(lt, log):
+	doc = DocxTemplate("E:/projects/paps_kurs/reports/Шаблон отчёта.docx")
+	content = {"login":log, 'tasks':lt}
+	doc.render(content)
+	doc.save("E:/projects/paps_kurs/reports/Отчёт по работе от " + time_ch() + ".docx")
+
+
 def aboba(root):
 	global user_login
 	global stop_thread
 	HOST, PORT = "localhost", 8080
-	data = '7' + " " + user_login
+	data = '8' + " " + user_login 
 	try:
 		with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock: #SOCK_STREAM - TCP сокет
 			sock.connect((HOST, PORT))
@@ -273,6 +284,28 @@ def aboba(root):
 		mb.showinfo('Ошибка', 'Не удалось совершить соединение с сервером!')
 	stop_thread = True
 	root.destroy()
+
+def header_report(td):
+	HOST, PORT = "localhost", 8080
+	data = '7' + " " + td.get(td.curselection()) 
+	try:
+		with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock: #SOCK_STREAM - TCP сокет
+			sock.connect((HOST, PORT))
+			sock.send(json.dumps(data).encode("utf-8"))
+			received = str(sock.recv(1024), "utf-8")
+			print("Отправленная информация -> ", str(data))
+			print("Полученная информация -> ", received)
+	except ConnectionRefusedError:
+		print("Соединение не было установлено!")
+		mb.showinfo('Ошибка', 'Не удалось совершить соединение с сервером!')
+	for_docx = []
+	fr_srv = received.split("_")
+	j = 1
+	for i in range(0, len(fr_srv)-4, 5):
+		for_docx.append([str(j), fr_srv[i+1], fr_srv[i+2], fr_srv[i+3], fr_srv[i+4]])
+		j += 1
+	create_docx(for_docx, td.get(td.curselection()))
+
 
 def user_choose(tb, but, obj):
 	global user_login
@@ -450,6 +483,9 @@ def s_header_interface(wind, w_list):
 	st_user_entry.place(x=570, y=100)
 	check_button.place(x=586, y=140)
 	check_button.config(command= lambda td = tasks_lb, status = st_entry, user = st_user_entry : checkin_task(td, status, user))
+	doc_button = Button(wind, text="Формирование отчёта")
+	doc_button.place(x=545, y=180)
+	doc_button.config(command= lambda ul = users_lb : header_report(ul))
 	task_name_entry = Entry(wind, width=20)
 	task_name_entry.place(x=17, y=210)
 	task_descr_entry = Text(wind, width=15, height=7)

@@ -162,10 +162,33 @@ class TCPHandler(socketserver.BaseRequestHandler):
 				else:
 					self.request.sendall('no'.encode('utf-8'))
 		elif l_data[0] == '7':
+			ls = list(db.execute(f"SELECT emp_position FROM users WHERE login = ?", (l_data[1],)))
+			if ls[0][0] == 'employee':
+				res = ''
+				lt = list(db.execute(f"SELECT * FROM tasks WHERE log = ?", (l_data[1],)))
+				print(lt)
+				for el in lt:
+					if el[6] == "DONE":
+						status = 'Выполнена!'
+					elif el[6] == "IN_PROGRESS":
+						status = 'В процессе выполнения!'
+					elif el[6] == "IN_PAUSE":
+						status = 'На паузе!'
+					elif el[6] == "APPOINTED":
+						status = 'Назначена, не выполнялась!'
+					elif el[6] == "CHECKING":
+						status = 'На проверке!'
+					res += (str(el[0]) + "_" + el[2] + "_" + el[3] + "_" + el[5] + "_" + status + "_")
+				self.request.sendall(res.encode('utf-8'))
+			else:
+				self.request.sendall('no'.encode('utf-8'))
+		elif l_data[0] == '8':
 			print('Пользователь ' + l_data[1] + ' вышел из сети!')
 			for user in users_connected:
 				if user[0] == l_data[1]:
 					users_connected.remove(user)
+
+
 
 
 users_connected = []
