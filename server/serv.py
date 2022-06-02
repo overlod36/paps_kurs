@@ -161,6 +161,12 @@ class TCPHandler(socketserver.BaseRequestHandler):
 					self.request.sendall('yes'.encode('utf-8'))
 				else:
 					self.request.sendall('no'.encode('utf-8'))
+		elif l_data[0] == '7':
+			print('Пользователь ' + l_data[1] + ' вышел из сети!')
+			for user in users_connected:
+				if user[0] == l_data[1]:
+					users_connected.remove(user)
+
 
 users_connected = []
 

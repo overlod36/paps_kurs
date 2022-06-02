@@ -257,7 +257,20 @@ def link_task(list_t, list_u):
 		mb.showinfo('Ошибка', 'Не удалось совершить соединение с сервером!')
 
 def aboba(root):
+	global user_login
 	global stop_thread
+	HOST, PORT = "localhost", 8080
+	data = '7' + " " + user_login
+	try:
+		with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock: #SOCK_STREAM - TCP сокет
+			sock.connect((HOST, PORT))
+			sock.send(json.dumps(data).encode("utf-8"))
+			received = str(sock.recv(1024), "utf-8")
+			print("Отправленная информация -> ", str(data))
+			print("Полученная информация -> ", received)
+	except ConnectionRefusedError:
+		print("Соединение не было установлено!")
+		mb.showinfo('Ошибка', 'Не удалось совершить соединение с сервером!')
 	stop_thread = True
 	root.destroy()
 
