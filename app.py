@@ -351,6 +351,7 @@ def send_task(tl, obj):
 
 def s_user_interface(wind, w_list):
 	wind.geometry("724x400+200+100")
+	wind.title("Окно сотрудника")
 	for obj in w_list:
 		obj.destroy()
 	watcher = Label(wind, text="00:00:00")
@@ -400,6 +401,7 @@ def admin_show(ul):
 
 def s_admin_interface(wind, w_list):
 	wind.geometry("950x400+200+100")
+	wind.title("Окно администратора")
 	for obj in w_list:
 		obj.destroy()
 	main_label = Label(wind, text="Страница Администратора")
@@ -462,6 +464,7 @@ def final_check(td):
 
 def s_header_interface(wind, w_list):
 	wind.geometry("748x400+200+100")
+	wind.title("Окно руководителя")
 	for obj in w_list:
 		obj.destroy()
 	users_t = Label(wind, text="Сотрудники")
@@ -510,6 +513,7 @@ def main():
 	root = Tk()
 	root.protocol("WM_DELETE_WINDOW", lambda r = root: aboba(r))
 	root.geometry("600x400")
+	root.title("Авторизация")
 	login_entry = Entry(root, width=23)
 	login_label = Label(root, text="Логин")
 	password_entry = Entry(root, width=23, show="*")

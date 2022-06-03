@@ -1,1 +1,5 @@
 screenshots/
+build/
+dist/
+server/build/
+server/dist/

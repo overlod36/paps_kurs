@@ -168,6 +168,7 @@ class TCPHandler(socketserver.BaseRequestHandler):
 				lt = list(db.execute(f"SELECT * FROM tasks WHERE log = ?", (l_data[1],)))
 				print(lt)
 				for el in lt:
+					status = "Неопознанный!"
 					if el[6] == "DONE":
 						status = 'Выполнена!'
 					elif el[6] == "IN_PROGRESS":
